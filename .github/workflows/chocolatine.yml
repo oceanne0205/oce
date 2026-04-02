@@ -1,60 +1,43 @@
-name: Chocolatine
+name: chocolatine
 
 on:
   push:
     branches-ignore:
-      - "no-ga/**"
+      - 'no-ga/**'
   pull_request:
     branches-ignore:
-      - "no-ga/**"
+      - 'no-ga/**'
 
 env:
-  MIRROR_SSH_URL: ${{ secrets.MIRROR_SSH_URL }}
-  EXECUTABLES: ${{ vars.EXECUTABLES }}
+  MIRROR_SSH_URL: ""
+  EXECUTABLES: ""
 
 jobs:
   check_compilation_and_coding_style:
-    name: Check Compilation and Coding Style
     runs-on: ubuntu-latest
     container: epitechcontent/epitest-docker
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Run Banana coding style check
-        run: banana-check-repo .
-
-      - name: Compile repository with epiclang
-        run: make
+      - uses: actions/checkout@v4
+      - run: banana-check-repo .
+      - run: CC=epiclang make
         timeout-minutes: 2
-        env:
-          CC: epiclang
-
-      - name: Clean repository
-        run: make clean
-
-      - name: Check executables
-        run: |
+      - run: make clean
+      - run: |
           IFS=',' read -ra ADDR <<< "$EXECUTABLES"
           for i in "${ADDR[@]}"; do
             if [ ! -x "$i" ]; then
-              echo "::error file=$i::Executable $i not found or not executable"
+              echo "::error file=$i::Executable not found or not executable"
               exit 1
             fi
           done
 
-    run_tests:
+  run_tests:
     needs: check_compilation_and_coding_style
     runs-on: ubuntu-latest
     container: epitechcontent/epitest-docker
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run tests
-        run: make tests_run
+      - uses: actions/checkout@v4
+      - run: make tests_run
         timeout-minutes: 2
 
   push_to_mirror:
@@ -62,14 +45,10 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Mirror to Epitech repository
-        uses: pixta-dev/repository-mirroring-action@v1
+      - uses: pixta-dev/repository-mirroring-action@v1
         with:
           target_repo_url: ${{ env.MIRROR_SSH_URL }}
           ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-
