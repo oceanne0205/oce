@@ -11,6 +11,7 @@ on:
 env:
   MIRROR_SSH_URL: ""
   EXECUTABLES: ""
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   check_compilation_and_coding_style:
