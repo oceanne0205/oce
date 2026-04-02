@@ -39,4 +39,5 @@ fclean:
 
 re:	fclean all
 
-.PHONY:	all clean fclean re
+test_run:
+	@echo "No tests yet"
