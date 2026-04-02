@@ -10,14 +10,13 @@ on:
 
 env:
   MIRROR_SSH_URL: ${{ secrets.MIRROR_SSH_URL }}
-  EXECUTABLES: "mysh"
+  EXECUTABLES: ${{ vars.EXECUTABLES }}
 
 jobs:
-    heck_compilation_and_coding_style:
+  check_compilation_and_coding_style:
     name: Check Compilation and Coding Style
     runs-on: ubuntu-latest
-    container:
-      image: epitechcontent/epitest-docker
+    container: epitechcontent/epitest-docker
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,45 +35,41 @@ jobs:
       - name: Clean repository
         run: make clean
 
-    - name: Verify executables exist and are executable
-      shell: bash
-      run: |
-        IFS=',' read -ra EXECS <<< "$EXECUTABLES"
-        FAILED=0
-        for exec in "${EXECS[@]}"; do
-          exec=$(echo "$exec" | xargs)
-          if [ ! -f "$exec" ]; then
-            echo "::error file=${exec}::Executable not found"
-            FAILED=1
-          elif [ ! -x "$exec" ]; then
-            echo "::error file=${exec}::File is not executable"
-            FAILED=1
-          fi
-        done
-    if [ "$FAILED" -ne 0 ]; then
-      exit 1;
-    fi
+      - name: Check executables
+        run: |
+          IFS=',' read -ra ADDR <<< "$EXECUTABLES"
+          for i in "${ADDR[@]}"; do
+            if [ ! -x "$i" ]; then
+              echo "::error file=$i::Executable $i not found or not executable"
+              exit 1
+            fi
+          done
 
-  run_tests:
-    name: Run Tests
-    needs: check_compilation_and_coding_style  # attend le job précédent
-    container:
-      image: epitechcontent/epitest-docker
-  steps:
-    - uses: actions/checkout@v4
-    - name: Run test suite
-      timeout-minutes: 2
-      run: make tests_run
+    run_tests:
+    needs: check_compilation_and_coding_style
+    runs-on: ubuntu-latest
+    container: epitechcontent/epitest-docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        run: make tests_run
+        timeout-minutes: 2
 
   push_to_mirror:
-    name: Push to Mirror Repository
     needs: run_tests
-    if: ${{ github.event_name == 'push' }}
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-        fetch-depth: 0
-      - uses: pixta-dev/repository-mirroring-action@v1
-      with:
-        target_repo_url: ${{ env.MIRROR_SSH_URL }}
-	ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+          fetch-depth: 0
+
+      - name: Mirror to Epitech repository
+        uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url: ${{ env.MIRROR_SSH_URL }}
+          ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+
