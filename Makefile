@@ -39,5 +39,5 @@ fclean:
 
 re:	fclean all
 
-test_run:
+tests_run:
 	@echo "No tests yet"
