@@ -11,7 +11,7 @@
 
 void my_putchar(char c)
 {
-    write(1, &c, 1);
+      write(1, &c, 1);
 }
 
 int get_type(char c)
