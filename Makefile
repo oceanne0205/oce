@@ -1,5 +1,5 @@
 ##
-## EPITECH PROJECT, 2025
+61;7600;1c## EPITECH PROJECT, 2025
 ## Makefile
 ## File description:
 ## Makefile
@@ -11,16 +11,8 @@ NAME	=	mysh
 
 CFLAGS	=	-Wall -Wextra -Werror -g3
 
-SRC	=	shell.c \
-		my_printf.c \
-		read.c \
-		execute.c \
-		parsing.c \
-		main.c \
-		exec.c \
-		bases_functions.c \
-		setenv.c \
-		cd.c
+SRC	=	main.c \
+		kebab_formatter.c \
 
 OBJ	=	$(SRC:.c=.o)
 
